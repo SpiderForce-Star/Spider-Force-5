@@ -1,24 +1,48 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Spider-Force 5 | Webb Spinner Visions</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif;color:#0f0;touch-action:none}
 #gameWrap{position:relative;width:100%;height:100%;display:flex;justify-content:center;align-items:center;background:#000}
 canvas{display:block;background:#000;max-width:100%;max-height:100%;touch-action:none}
 #ui{position:absolute;inset:0;pointer-events:none;z-index:10}
-#start,#end{position:absolute;inset:0;background:radial-gradient(ellipse at center,#001a12 0%,#000 75%);display:flex;flex-direction:column;justify-content:center;align-items:center;color:#0ff;z-index:30;text-align:center;padding:20px}
-#start h1{font-size:clamp(1.8rem,8vw,3.2rem);color:#0f8;text-shadow:0 0 25px #0f8;margin-bottom:6px;letter-spacing:3px;font-weight:700}
-#start .credit{font-size:clamp(0.85rem,3.5vw,1.05rem);color:#6c8;margin-bottom:22px;letter-spacing:1px}
-.btn{background:linear-gradient(180deg,#0a5,#053);border:2px solid #0f8;color:#0f8;padding:14px 36px;font-size:1.1rem;cursor:pointer;margin:10px;text-transform:uppercase;letter-spacing:2px;border-radius:4px;pointer-events:auto}
+#start,#end{position:absolute;inset:0;background:radial-gradient(ellipse at center,#001a12 0%,#000 75%);display:flex;flex-direction:column;justify-content:center;align-items:center;color:#0ff;z-index:30;text-align:center;padding:12px;overflow-y:auto}
+#start h1{font-size:clamp(1.5rem,6.5vw,2.8rem);color:#0f8;text-shadow:0 0 25px #0f8;margin-bottom:2px;letter-spacing:3px;font-weight:700}
+#start .credit{font-size:clamp(0.75rem,2.8vw,0.95rem);color:#6c8;margin-bottom:10px;letter-spacing:1px}
+.btn{background:linear-gradient(180deg,#0a5,#053);border:2px solid #0f8;color:#0f8;padding:11px 26px;font-size:0.95rem;cursor:pointer;margin:5px;text-transform:uppercase;letter-spacing:2px;border-radius:4px;pointer-events:auto}
 .btn:hover,.btn:active{background:#0f8;color:#000}
-.ctrl{margin-top:18px;font-size:clamp(0.75rem,2.8vw,0.9rem);color:#5a7;max-width:520px;line-height:1.5;background:rgba(0,30,15,.55);padding:14px 18px;border:1px solid #0a4;border-radius:4px}
+.btn.secondary{background:#222;border-color:#555;color:#aaa}
+.btn.small{padding:6px 14px;font-size:0.8rem;margin:4px}
+.ctrl{margin-top:10px;font-size:clamp(0.65rem,2.3vw,0.8rem);color:#5a7;max-width:460px;line-height:1.4;background:rgba(0,30,15,.55);padding:10px 14px;border:1px solid #0a4;border-radius:4px}
 .hidden{display:none!important}
 #muteBtn{position:absolute;top:10px;right:12px;z-index:40;background:rgba(0,40,20,.75);border:1px solid #0a5;color:#0f8;padding:7px 12px;font-size:12px;cursor:pointer;border-radius:4px;pointer-events:auto}
-/* Mobile touch controls */
+/* Panels */
+.lb-panel{background:rgba(0,25,15,0.78);border:1px solid #0a5;border-radius:6px;padding:9px 14px;margin:7px 0;max-width:340px;width:100%;font-size:12.5px;text-align:left}
+.lb-panel h3{color:#0f8;margin-bottom:5px;text-align:center;font-size:13px;letter-spacing:1px}
+.lb-row{display:flex;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(0,80,40,0.25)}
+.lb-row:last-child{border-bottom:none}
+.lb-rank{color:#6a8;width:26px}
+.lb-name{flex:1;color:#8f8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-score{color:#0f8;font-weight:600}
+.lb-note{text-align:center;color:#567;font-size:11px;margin-top:5px}
+.profile-card{text-align:center}
+.profile-card .pname{color:#0f8;font-size:15px;font-weight:700;margin:4px 0}
+.profile-card .pstat{color:#8f8;font-size:12px;margin:2px 0}
+/* Modals */
+#nameModal,#editNameModal{position:absolute;inset:0;background:rgba(0,0,0,0.88);z-index:50;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:20px}
+.modal-box{background:#001a12;border:2px solid #0f8;padding:22px;border-radius:8px;max-width:340px;width:100%;text-align:center}
+.modal-box h2{color:#0f8;margin-bottom:10px;font-size:1.2rem}
+.modal-box p{color:#8f8;margin-bottom:12px}
+.modal-box input{width:100%;padding:11px;margin-bottom:12px;background:#000;border:1px solid #0a5;color:#0f8;font-size:16px;text-align:center;border-radius:4px}
+/* Touch controls */
 #touchControls{position:absolute;inset:0;pointer-events:none;z-index:20;display:none}
 #touchControls.show{display:block}
 .tbtn{position:absolute;pointer-events:auto;border-radius:50%;border:2px solid rgba(0,255,140,0.55);background:rgba(0,40,25,0.45);color:#0f8;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none;transition:background .1s,border-color .1s}
@@ -31,9 +55,7 @@ canvas{display:block;background:#000;max-width:100%;max-height:100%;touch-action
 #btnMissile{width:64px;height:64px;right:30px;bottom:30px;font-size:13px}
 #btnRoll{width:56px;height:56px;right:110px;bottom:40px;font-size:12px}
 #btnPause{width:48px;height:48px;left:12px;top:12px;font-size:14px}
-@media (min-width:900px){
-  #touchControls{display:none!important}
-}
+@media (min-width:900px){#touchControls{display:none!important}}
 </style>
 </head>
 <body>
@@ -52,30 +74,97 @@ canvas{display:block;background:#000;max-width:100%;max-height:100%;touch-action
       <div class="tbtn" id="btnPause">❚❚</div>
     </div>
   </div>
+
+  <!-- START SCREEN -->
   <div id="start">
     <h1>SPIDER-FORCE 5</h1>
     <div class="credit">Created by Webb Spinner Visions</div>
+
+    <div class="lb-panel profile-card" id="profilePanel">
+      <h3>PILOT PROFILE</h3>
+      <div class="pname" id="profileName">Connecting...</div>
+      <div class="pstat">Best Score: <span id="profileBest">0</span></div>
+      <div class="pstat">Games Played: <span id="profileGames">0</span></div>
+      <div class="pstat">Highest Challenge: <span id="profileCh">1</span></div>
+      <button class="btn small" id="editNameBtn">Edit Name</button>
+    </div>
+
+    <div class="lb-panel">
+      <h3>YOUR BEST (LOCAL)</h3>
+      <div id="localScores">Loading...</div>
+    </div>
+
+    <div class="lb-panel">
+      <h3>GLOBAL TOP 10</h3>
+      <div id="globalScores">Loading...</div>
+      <div class="lb-note" id="globalNote">Initializing secure connection...</div>
+    </div>
+
     <button class="btn" id="go">Launch Mission</button>
+    <button class="btn secondary" id="clearScores">Clear Local Scores</button>
     <div class="ctrl">
       <b>CONTROLS</b><br>
       Desktop: WASD / Arrows + Space / Enter / Shift<br>
-      Mobile: On-screen buttons (shown automatically)<br>
-      Esc or Pause button to pause
+      Mobile: On-screen buttons<br>
+      Esc or Pause to pause
     </div>
   </div>
+
+  <!-- END SCREEN -->
   <div id="end" class="hidden">
     <h1 id="et">MISSION COMPLETE</h1>
-    <p id="em" style="font-size:1.2rem;margin:16px 0;color:#8f8"></p>
+    <p id="em" style="font-size:1.1rem;margin:10px 0;color:#8f8"></p>
     <p style="margin-bottom:6px">Final Score: <span id="fs">0</span></p>
-    <p style="font-size:.9rem;color:#6a8;margin-bottom:18px">Created by Webb Spinner Visions</p>
+    <p id="rankMsg" style="color:#0f8;margin-bottom:8px;font-weight:600"></p>
+    <div class="lb-panel">
+      <h3>GLOBAL TOP 10</h3>
+      <div id="globalScoresEnd">Loading...</div>
+    </div>
+    <p style="font-size:.8rem;color:#6a8;margin:10px 0">Created by Webb Spinner Visions</p>
     <button class="btn" id="re">Fly Again</button>
+  </div>
+
+  <!-- SUBMIT SCORE MODAL -->
+  <div id="nameModal" class="hidden">
+    <div class="modal-box">
+      <h2>Submit to Global Board</h2>
+      <p>Score: <span id="submitScoreVal">0</span></p>
+      <input id="playerName" maxlength="16" placeholder="Your pilot name" autocomplete="off">
+      <button class="btn" id="submitScoreBtn">Submit Score</button>
+      <button class="btn secondary" id="skipSubmit">Skip</button>
+    </div>
+  </div>
+
+  <!-- EDIT NAME MODAL -->
+  <div id="editNameModal" class="hidden">
+    <div class="modal-box">
+      <h2>Edit Pilot Name</h2>
+      <input id="editNameInput" maxlength="16" placeholder="New pilot name" autocomplete="off">
+      <button class="btn" id="saveNameBtn">Save Name</button>
+      <button class="btn secondary" id="cancelEditName">Cancel</button>
+    </div>
   </div>
 </div>
 
 <script>
 // ============================================================
-// SPIDER-FORCE 5  v3  – Mobile + Performance + Rock Music
+// SPIDER-FORCE 5  v6
+// Secure Firebase + Player Profiles + Full Game Logic
 // Created by Webb Spinner Visions
+// ============================================================
+
+// ============================================================
+// 1. PASTE YOUR FIREBASE CONFIG HERE
+// ============================================================
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 // ============================================================
 
 const canvas = document.getElementById('c');
@@ -83,14 +172,239 @@ const ctx = canvas.getContext('2d', { alpha: false });
 const W = 1280, H = 720, CX = W/2, CY = H/2;
 const FOCAL = 500, NEAR = 2.5, FAR = 400;
 
-// Detect mobile / touch
 const isMobile = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || window.matchMedia('(max-width:900px)').matches;
-const touchUI = document.getElementById('touchControls');
-if (isMobile) touchUI.classList.add('show');
+if (isMobile) document.getElementById('touchControls').classList.add('show');
 
-// Audio
+// ---------- Local High Scores ----------
+let highScores = JSON.parse(localStorage.getItem('spiderForce5HS') || '{}');
+function saveLocalHighScore(finalScore, challengeReached) {
+  if (!highScores.overall || finalScore > highScores.overall) highScores.overall = finalScore;
+  for (let i = 1; i <= challengeReached; i++) {
+    if (!highScores['ch'+i] || finalScore > highScores['ch'+i]) highScores['ch'+i] = finalScore;
+  }
+  localStorage.setItem('spiderForce5HS', JSON.stringify(highScores));
+  renderLocalScores();
+}
+function renderLocalScores() {
+  const el = document.getElementById('localScores');
+  let html = `Overall: <b>${(highScores.overall||0).toLocaleString()}</b><br>`;
+  for (let i = 1; i <= 5; i++) html += `Challenge ${i}: <b>${(highScores['ch'+i]||0).toLocaleString()}</b><br>`;
+  el.innerHTML = html;
+}
+document.getElementById('clearScores').onclick = () => {
+  if (confirm('Clear all local high scores?')) {
+    localStorage.removeItem('spiderForce5HS');
+    highScores = {};
+    renderLocalScores();
+  }
+};
+renderLocalScores();
+
+// ---------- Firebase Auth + Profiles + Scores ----------
+let db = null;
+let auth = null;
+let currentUser = null;
+let playerProfile = null;
+let firebaseReady = false;
+
+function initFirebase() {
+  if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes('YOUR_')) {
+    document.getElementById('globalNote').textContent = 'Paste your Firebase config + enable Anonymous Auth';
+    document.getElementById('profileName').textContent = 'Offline Mode';
+    return;
+  }
+  try {
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.database();
+    firebaseReady = true;
+    document.getElementById('globalNote').textContent = 'Connecting securely...';
+
+    // Anonymous sign-in
+    auth.signInAnonymously()
+      .then(() => {
+        // Auth state will fire
+      })
+      .catch(err => {
+        console.warn('Anonymous sign-in failed', err);
+        document.getElementById('globalNote').textContent = 'Auth failed – check Firebase console';
+      });
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        await loadOrCreateProfile(user.uid);
+        loadGlobalScores();
+        document.getElementById('globalNote').textContent = 'Live global leaderboard (secure)';
+      }
+    });
+  } catch (e) {
+    console.warn('Firebase init error', e);
+    document.getElementById('globalNote').textContent = 'Firebase config error';
+  }
+}
+
+async function loadOrCreateProfile(uid) {
+  const ref = db.ref('profiles/' + uid);
+  const snap = await ref.once('value');
+  if (snap.exists()) {
+    playerProfile = snap.val();
+  } else {
+    // Create default profile
+    const shortId = uid.slice(-4).toUpperCase();
+    playerProfile = {
+      name: 'Pilot-' + shortId,
+      bestScore: 0,
+      gamesPlayed: 0,
+      highestChallenge: 1,
+      totalScore: 0,
+      created: Date.now(),
+      lastPlayed: Date.now()
+    };
+    await ref.set(playerProfile);
+  }
+  renderProfile();
+}
+
+function renderProfile() {
+  if (!playerProfile) return;
+  document.getElementById('profileName').textContent = playerProfile.name || 'Pilot';
+  document.getElementById('profileBest').textContent = (playerProfile.bestScore || 0).toLocaleString();
+  document.getElementById('profileGames').textContent = playerProfile.gamesPlayed || 0;
+  document.getElementById('profileCh').textContent = playerProfile.highestChallenge || 1;
+}
+
+async function updateProfileOnScore(score, challenge) {
+  if (!currentUser || !db || !playerProfile) return;
+  const updates = {
+    lastPlayed: Date.now(),
+    gamesPlayed: (playerProfile.gamesPlayed || 0) + 1,
+    totalScore: (playerProfile.totalScore || 0) + score
+  };
+  if (score > (playerProfile.bestScore || 0)) updates.bestScore = score;
+  if (challenge > (playerProfile.highestChallenge || 1)) updates.highestChallenge = challenge;
+
+  // Keep name in sync
+  updates.name = playerProfile.name;
+
+  await db.ref('profiles/' + currentUser.uid).update(updates);
+  playerProfile = { ...playerProfile, ...updates };
+  renderProfile();
+}
+
+async function loadGlobalScores() {
+  if (!db) return;
+  try {
+    const snap = await db.ref('scores').orderByChild('score').limitToLast(10).once('value');
+    const list = [];
+    snap.forEach(child => list.push(child.val()));
+    list.reverse();
+    renderGlobalScores(list, 'globalScores');
+    renderGlobalScores(list, 'globalScoresEnd');
+  } catch (e) {
+    console.warn('Failed to load scores', e);
+    document.getElementById('globalScores').innerHTML = 'Unable to load leaderboard';
+  }
+}
+
+function renderGlobalScores(list, elementId) {
+  const el = document.getElementById(elementId);
+  if (!list || list.length === 0) {
+    el.innerHTML = '<div class="lb-note">No scores yet – be the first!</div>';
+    return;
+  }
+  let html = '';
+  list.forEach((entry, i) => {
+    const name = (entry.name || 'Anonymous').slice(0, 16);
+    html += `<div class="lb-row">
+      <span class="lb-rank">${i+1}.</span>
+      <span class="lb-name">${name}</span>
+      <span class="lb-score">${Number(entry.score).toLocaleString()}</span>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function submitGlobalScore(name, score, challenge) {
+  if (!db || !currentUser || score < 1) return Promise.resolve();
+  const cleanName = (name || playerProfile?.name || 'Anonymous').trim().slice(0, 16) || 'Anonymous';
+  const entry = {
+    name: cleanName,
+    score: Math.floor(score),
+    challenge: challenge || 1,
+    ts: Date.now(),
+    uid: currentUser.uid,
+    version: 'v6'
+  };
+  return db.ref('scores').push(entry);
+}
+
+// Name modals
+let pendingScore = 0;
+let pendingChallenge = 1;
+
+function showNameModal(score, challenge) {
+  pendingScore = score;
+  pendingChallenge = challenge;
+  document.getElementById('submitScoreVal').textContent = score.toLocaleString();
+  document.getElementById('playerName').value = playerProfile?.name || localStorage.getItem('spiderForce5Name') || '';
+  document.getElementById('nameModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('playerName').focus(), 80);
+}
+
+document.getElementById('submitScoreBtn').onclick = async () => {
+  const name = document.getElementById('playerName').value.trim().slice(0, 16);
+  if (name.length < 2) {
+    alert('Please enter a name (2–16 characters)');
+    return;
+  }
+  // Update local name + profile name
+  if (playerProfile) playerProfile.name = name;
+  localStorage.setItem('spiderForce5Name', name);
+
+  document.getElementById('nameModal').classList.add('hidden');
+  try {
+    await submitGlobalScore(name, pendingScore, pendingChallenge);
+    await updateProfileOnScore(pendingScore, pendingChallenge);
+    await loadGlobalScores();
+    document.getElementById('rankMsg').textContent = 'Score submitted to global board!';
+    renderProfile();
+  } catch (e) {
+    console.warn(e);
+    document.getElementById('rankMsg').textContent = 'Could not submit (check rules / auth)';
+  }
+};
+
+document.getElementById('skipSubmit').onclick = () => {
+  document.getElementById('nameModal').classList.add('hidden');
+};
+
+// Edit name
+document.getElementById('editNameBtn').onclick = () => {
+  document.getElementById('editNameInput').value = playerProfile?.name || '';
+  document.getElementById('editNameModal').classList.remove('hidden');
+};
+document.getElementById('cancelEditName').onclick = () => {
+  document.getElementById('editNameModal').classList.add('hidden');
+};
+document.getElementById('saveNameBtn').onclick = async () => {
+  const newName = document.getElementById('editNameInput').value.trim().slice(0, 16);
+  if (newName.length < 2) {
+    alert('Name must be 2–16 characters');
+    return;
+  }
+  if (playerProfile && currentUser && db) {
+    playerProfile.name = newName;
+    await db.ref('profiles/' + currentUser.uid).update({ name: newName });
+    localStorage.setItem('spiderForce5Name', newName);
+    renderProfile();
+  }
+  document.getElementById('editNameModal').classList.add('hidden');
+};
+
+// ---------- Audio ----------
 let audioCtx = null, masterGain = null, muted = false;
-let engineOsc = null, engineGain = null, musicNodes = [];
+let engineOsc = null, engineGain = null, musicTimer = null;
 
 function initAudio() {
   if (audioCtx) return;
@@ -99,7 +413,6 @@ function initAudio() {
   masterGain.gain.value = 0.32;
   masterGain.connect(audioCtx.destination);
 }
-
 function playTone(freq, type, dur, vol=0.25, slide=0) {
   if (!audioCtx || muted) return;
   const o = audioCtx.createOscillator();
@@ -112,7 +425,6 @@ function playTone(freq, type, dur, vol=0.25, slide=0) {
   o.connect(g); g.connect(masterGain);
   o.start(); o.stop(audioCtx.currentTime + dur + 0.02);
 }
-
 function playNoise(dur, vol=0.2, freq=700) {
   if (!audioCtx || muted) return;
   const len = Math.floor(audioCtx.sampleRate * dur);
@@ -129,7 +441,6 @@ function playNoise(dur, vol=0.2, freq=700) {
   src.connect(f); f.connect(g); g.connect(masterGain);
   src.start();
 }
-
 function sfxLaser(){ playTone(920,'square',0.07,0.13,-450); playTone(1400,'square',0.04,0.07,-700); }
 function sfxMissile(){ playTone(160,'sawtooth',0.28,0.18,90); playNoise(0.28,0.14,380); }
 function sfxExplode(){ playNoise(0.5,0.32,550); playTone(80,'sawtooth',0.45,0.22,-40); }
@@ -152,8 +463,6 @@ function startEngine(){
 }
 function stopEngine(){ if(engineOsc){try{engineOsc.stop()}catch(e){} engineOsc=null; engineGain=null;} }
 
-// Rock & Roll style music – driving bass + rhythmic power
-let musicTimer = null;
 function startMusic(){
   if (!audioCtx || muted || musicTimer) return;
   const bass = [55, 55, 73.4, 55, 82.4, 55, 73.4, 55];
@@ -172,7 +481,7 @@ function startMusic(){
 }
 function stopMusic(){ if(musicTimer){clearInterval(musicTimer); musicTimer=null;} }
 
-// Game state
+// ---------- Game State ----------
 let state='start', ch=1, score=0, hull=100, missiles=5, activeM=null;
 let timer=0, kills=0, need=12, last=0, keys={};
 let bank=0, tBank=0, roll=0, rolling=false, rT=0;
@@ -182,7 +491,6 @@ let planets=[], flash=0, shake=0, msgs=[], lastFire=0, lastM=0;
 let done=false, between=false, bT=0;
 let touchActive = {up:false,down:false,left:false,right:false,laser:false,missile:false,roll:false};
 
-// Longer challenges
 const CHs = [
   {n:"First Contact",        d:210, need:14, spawn:2.1, spd:16, hp:1,   fr:2.7, max:6},
   {n:"Swarm Rising",         d:240, need:20, spawn:1.6, spd:20, hp:1.3, fr:2.2, max:9},
@@ -191,7 +499,6 @@ const CHs = [
   {n:"Spider's Final Stand", d:330, need:40, spawn:0.8, spd:33, hp:3.5, fr:1.1, max:15}
 ];
 
-// Performance scaling
 const STAR_COUNT = isMobile ? 140 : 240;
 const MAX_PARTS  = isMobile ? 55 : 90;
 const MAX_METEORS= isMobile ? 3 : 5;
@@ -225,7 +532,7 @@ function reset(n){
 
 function startGame(){
   initAudio();
-  if(audioCtx.state==='suspended') audioCtx.resume();
+  if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
   startEngine(); startMusic();
   score=0; hull=100;
   initStars(); initPlanets();
@@ -233,6 +540,8 @@ function startGame(){
   state='playing';
   document.getElementById('start').classList.add('hidden');
   document.getElementById('end').classList.add('hidden');
+  document.getElementById('nameModal').classList.add('hidden');
+  document.getElementById('editNameModal').classList.add('hidden');
   last=performance.now();
   requestAnimationFrame(loop);
 }
@@ -255,7 +564,7 @@ window.addEventListener('keydown',e=>{
 });
 window.addEventListener('keyup',e=>keys[e.code]=false);
 
-// Touch controls
+// Touch
 function bindTouch(id, key){
   const el = document.getElementById(id);
   const down = e=>{e.preventDefault(); touchActive[key]=true; el.classList.add('active');};
@@ -277,9 +586,7 @@ document.getElementById('btnPause').addEventListener('touchstart', e=>{
   else if(state==='paused'){state='playing';last=performance.now();requestAnimationFrame(loop);}
 },{passive:false});
 
-// Responsive canvas
 function resize(){
-  const wrap = document.getElementById('gameWrap');
   const ratio = W/H;
   let cw = window.innerWidth, ch = window.innerHeight;
   if(cw/ch > ratio){ cw = ch * ratio; } else { ch = cw / ratio; }
@@ -289,6 +596,7 @@ function resize(){
 window.addEventListener('resize', resize);
 resize();
 
+// ---------- Gameplay ----------
 function spawnEnemy(){
   const c=CHs[ch-1];
   if(enemies.length>=c.max) return;
@@ -349,7 +657,6 @@ function update(dt){
   const c=CHs[ch-1];
   const ts=1.6, my=0.54, mp=0.39;
 
-  // Combined keyboard + touch
   const left  = keys.KeyA||keys.ArrowLeft ||touchActive.left;
   const right = keys.KeyD||keys.ArrowRight||touchActive.right;
   const up    = keys.KeyW||keys.ArrowUp   ||touchActive.up;
@@ -366,7 +673,6 @@ function update(dt){
   pitch=clamp(pitch+pV*dt,-mp,mp);
   bank+=(tBank-bank)*5.6*dt;
 
-  // Roll
   if((keys.ShiftLeft||keys.ShiftRight||touchActive.roll)&&!rolling&&Math.abs(yV)>0.9){
     rolling=true; rT=0;
     if(touchActive.roll) touchActive.roll=false;
@@ -507,6 +813,7 @@ function update(dt){
   }
 }
 
+// ---------- Drawing ----------
 function proj(x,y,z){
   if(z<=NEAR) z=NEAR+0.01;
   const sc=FOCAL/z;
@@ -660,7 +967,6 @@ function drawParts(){
 }
 
 function drawCockpit(){
-  // Vignette
   const grd=ctx.createRadialGradient(CX,CY,130,CX,CY,520);
   grd.addColorStop(0,'rgba(0,0,0,0)');
   grd.addColorStop(0.6,'rgba(0,0,0,0.1)');
@@ -668,7 +974,6 @@ function drawCockpit(){
   grd.addColorStop(1,'rgba(0,0,0,0.85)');
   ctx.fillStyle=grd; ctx.fillRect(0,0,W,H);
 
-  // Frame
   ctx.fillStyle='#0a100a';
   ctx.fillRect(0,0,W,48);
   ctx.fillRect(0,H-108,W,108);
@@ -683,7 +988,6 @@ function drawCockpit(){
   ctx.moveTo(W-96,48); ctx.lineTo(W-96,H-108);
   ctx.stroke();
 
-  // Left switches
   for(let i=0;i<6;i++){
     const by=72+i*46;
     const lit=(i%3===0&&Math.sin(performance.now()/250+i)>0.25);
@@ -694,7 +998,6 @@ function drawCockpit(){
     ctx.fillRect(62,by+2,12,10);
   }
 
-  // Right gauges
   for(let i=0;i<4;i++){
     const by=85+i*56;
     ctx.beginPath(); ctx.arc(W-48,by,16,0,6.2832);
@@ -840,19 +1143,33 @@ function loop(ts){
 
 function end(won){
   stopEngine(); stopMusic();
-  state=won?'won':'lost';
+  const challengeReached = won ? 5 : ch;
+  saveLocalHighScore(score, challengeReached);
+
+  state = won ? 'won' : 'lost';
   document.getElementById('end').classList.remove('hidden');
-  document.getElementById('et').textContent=won?'MISSION ACCOMPLISHED':'SHIP DESTROYED';
-  document.getElementById('em').textContent=won
-    ?'All five challenges cleared. Spider-Force prevails!'
-    :'Hull integrity critical. Eject!';
-  document.getElementById('fs').textContent=score;
+  document.getElementById('et').textContent = won ? 'MISSION ACCOMPLISHED' : 'SHIP DESTROYED';
+  document.getElementById('em').textContent = won
+    ? 'All five challenges cleared. Spider-Force prevails!'
+    : 'Hull integrity critical. Eject!';
+  document.getElementById('fs').textContent = score.toLocaleString();
+  document.getElementById('rankMsg').textContent = '';
+
+  if (firebaseReady && currentUser && score > 0) {
+    setTimeout(() => showNameModal(score, challengeReached), 500);
+  } else {
+    loadGlobalScores();
+  }
 }
 
-// Prevent scrolling on mobile
-document.body.addEventListener('touchmove',e=>{if(e.target.closest('#touchControls')||e.target===canvas)e.preventDefault();},{passive:false});
+// Prevent scrolling
+document.body.addEventListener('touchmove', e => {
+  if (e.target.closest('#touchControls') || e.target === canvas) e.preventDefault();
+}, {passive:false});
 
-console.log('Spider-Force 5 v3 — Mobile Ready — Created by Webb Spinner Visions');
+// Boot
+initFirebase();
+console.log('Spider-Force 5 v6 — Secure Profiles + Full Logic — Webb Spinner Visions');
 </script>
 </body>
 </html>
